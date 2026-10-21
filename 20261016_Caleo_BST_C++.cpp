@@ -5,7 +5,6 @@ struct Node {
     Node* childLeft;
     Node* childRight;
 };
-
 Node* creaNodo(int val) {
     Node* nuovo = new Node();
     nuovo->value = val;
@@ -13,7 +12,6 @@ Node* creaNodo(int val) {
     nuovo->childRight = NULL;
     return nuovo;
 }
-
 Node* insert(Node* r, int val) {
     if (r == NULL) {
         return creaNodo(val);
@@ -48,8 +46,6 @@ Node* insert(Node* r, int val) {
 
 int main() {
     Node* radice = NULL;
-    
-   
     radice = insert(radice, 10);
     radice = insert(radice, 5);
     radice = insert(radice, 15);
