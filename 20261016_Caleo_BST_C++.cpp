@@ -1,134 +1,115 @@
+
+ 
 #include <iostream>
+#include <cstdlib>
+#include <string>
+#include <vector>
 using namespace std;
-struct Node {
-    int value;
-    Node* childLeft;
-    Node* childRight;
+
+struct Node{
+    int data;
+    Node* l_child;
+    Node* r_child;
+    Node(int n){
+        data = n;
+        l_child = r_child = nullptr;
+    }
 };
 
-Node* creaNodo(int val) {
-    Node* nuovo = new Node();
-    nuovo->value = val;
-    nuovo->childLeft = NULL;
-    nuovo->childRight = NULL;
-    return nuovo;
+Node* insert(Node* root, int valore);
+bool search(Node* root, int valore);
+Node* findMin(Node* root);
+Node* findMax(Node* root);
+int countNodes(Node* root);
+int countLeaves(Node* root);
+int countInRange(Node* root, int min, int max);
+
+int main(){
+    
+    system("PAUSE");
+    return 0;
 }
 
-Node* insert(Node* r, int val) {
-    if (r == NULL) {
-        return creaNodo(val);
+Node* insert(Node* root, int valore){
+    if(root == nullptr){
+        return new Node(valore);
+    }
+    if(root->data == valore){
+        return root;
     }
 
-    Node* dad = NULL;
-    Node* current = r;
+    if(valore > root->data){
+        root->r_child = insert(root->r_child, valore);
+    }else{
+        root->l_child = insert(root->l_child, valore);
+    }
 
-    while (current != NULL) {
-        dad = current;
+    return root;
+}
 
-        if (val < current->value) {
-            current = current->childLeft;
-        } 
-        else if (val > current->value) {
-            current = current->childRight;
-        } 
-        else {
-            return r;
+bool search(Node* root, int valore){
+    while(root != nullptr){
+        if(root->data == valore){
+            return true;
+        }
+
+        if(valore > root->data){
+            root = root->r_child;
+        }else{
+            root = root->l_child;
         }
     }
-
-    if (val < dad->value) {
-        dad->childLeft = creaNodo(val);
-    } 
-    else {
-        dad->childRight = creaNodo(val);
-    }
-
-    return r;
+    return false;
 }
-
-Node* findMin(Node* r) {
-    if (r == NULL) {
-        return NULL;
+Node* findMin(Node* root){
+    if(root == nullptr){
+        return nullptr;
     }
-
-    Node* current = r;
-    while (current->childLeft != NULL) {
-        current = current->childLeft;
+    Node* current = root;
+    while(current->l_child != nullptr){
+        current = current->l_child;
     }
-
     return current;
+
 }
-
-Node* findMax(Node* r) {
-    if (r == NULL) {
-        return NULL;
+Node* findMax(Node* root){
+    if(root == nullptr){
+        return nullptr;
     }
-
-    Node* current = r;
-    while (current->childRight != NULL) {
-        current = current->childRight;
+    Node* current = root;
+    while(current->r_child != nullptr){
+        current = current->r_child;
     }
-
     return current;
+
 }
 
-int countNodes(Node* r) {
-    if (r == NULL) {
+int countNodes(Node* root){
+    if(root == nullptr){
         return 0;
     }
-    return 1 + countNodes(r->childLeft) + countNodes(r->childRight);
+    return 1 + countNodes(root->l_child) + countNodes(root->r_child);
 }
 
-int countLeaves(Node* r) {
-    if (r == NULL) {
+int countLeaves(Node* root){
+    if(root == nullptr){
         return 0;
     }
-    if (r->childLeft == NULL && r->childRight == NULL) {
+    if(root->l_child == nullptr && root->r_child == nullptr){
         return 1;
     }
-    return countLeaves(r->childLeft) + countLeaves(r->childRight);
+    return countLeaves(root->l_child) + countLeaves(root->r_child);
 }
 
-int countInRange(Node* r, int min, int max) {
-    if (r == NULL) {
+int countInRange(Node* root, int min, int max){
+    if(root == nullptr){
         return 0;
     }
-
-    if (r->value < min) {
-        return countInRange(r->childRight, min, max);
+    if(root->data < min){
+        return countInRange(root->r_child, min, max);
+    }else if(root->data > max){
+        return countInRange(root->l_child, min, max);
+    }else{
+        return 1 + countInRange(root->l_child, min, max) + countInRange(root->r_child, min, max);
     }
-    if (r->value > max) {
-        return countInRange(r->childLeft, min, max);
-    }
-
-    return 1 + countInRange(r->childLeft, min, max) + countInRange(r->childRight, min, max);
-}
-
-int main() {
-    Node* radice = NULL;
-
-    radice = insert(radice, 10);
-    radice = insert(radice, 5);
-    radice = insert(radice, 15);
-    radice = insert(radice, 2);
-    radice = insert(radice, 7);
-    radice = insert(radice, 12);
-    radice = insert(radice, 20);
-
-    Node* minNodo = findMin(radice);
-    Node* maxNodo = findMax(radice);
-
-    if (minNodo != NULL) {
-        std::cout << "Minimo: " << minNodo->value << std::endl;
-    }
-
-    if (maxNodo != NULL) {
-        cout << "Massimo: " << maxNodo->value << std::endl;
-    }
-
-    cout << "Totale nodi: " << countNodes(radice) << std::endl;
-    cout << "Totale foglie: " << countLeaves(radice) << std::endl;
-    cout << "Nodi compresi tra 6 e 16: " << countInRange(radice, 6, 16) << std::endl;
-
-    return 0;
 }
