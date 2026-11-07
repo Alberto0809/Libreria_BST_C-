@@ -13,7 +13,7 @@ private:
     Node* right;
 
 public:
-    // Costruttore richiesto da Node a(50);
+    
     Node(int d) {
         data = d;
         left = nullptr;
@@ -43,7 +43,7 @@ private:
     Node* root;
     int numNodi;
 
-    // --- Metodi ricorsivi privati di supporto ---
+   
     
     void inOrderRic(Node* p) const {
         if (p == nullptr) return;
@@ -107,18 +107,18 @@ private:
     }
 
 public:
-    // Costruttore e Distruttore
+    
     BST() {
         root = nullptr;
         numNodi = 0;
     }
     ~BST() { svuota(); }
 
-    // Informazioni base
+ 
     bool isEmpty() const { return root == nullptr; }
     int size() const { return numNodi; }
 
-    // Inserimento
+  
     bool insert(int key) {
         if (root == nullptr) {
             root = new Node(key);
@@ -167,7 +167,6 @@ public:
         return p->getData();
     }
 
-    // Cancellazione e interrogazioni avanzate
     int contaFoglie() const { return contaFoglieRic(root); }
     int contaIntervallo(int low, int high) const { return contaIntervalloRic(root, low, high); }
 
