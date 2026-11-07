@@ -1,9 +1,4 @@
-/*
-Cognome: Balcan
-Nome: Stelian Gabrielle
-Classe: 4C
-Esercizio: BSTs Library
-*/
+
  
 #include <iostream>
 #include <cstdlib>
