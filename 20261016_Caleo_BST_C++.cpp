@@ -1,120 +1,186 @@
-/*
-Cognome: Balcan
-Nome: Stelian Gabrielle
-Classe: 4C
-Esercizio: BSTs Library
-*/
- 
 #include <iostream>
-#include <cstdlib>
-#include <string>
-#include <vector>
+#include <algorithm>
 using namespace std;
 
-struct Node{
+// =====================================================================
+// PARTE A - La classe Node
+// =====================================================================
+
+class Node {
+private:
     int data;
-    Node* l_child;
-    Node* r_child;
-    Node(int n){
-        data = n;
-        l_child = r_child = nullptr;
+    Node* left;
+    Node* right;
+
+public:
+    // Costruttore richiesto da Node a(50);
+    Node(int d) {
+        data = d;
+        left = nullptr;
+        right = nullptr;
+    }
+
+    int getData() const { return data; }
+    void setData(int d) { data = d; }
+
+    Node* getLeft() const { return left; }
+    Node* getRight() const { return right; }
+
+    void setLeft(Node* l) { left = l; }
+    void setRight(Node* r) { right = r; }
+
+    bool isLeaf() const { 
+        return (left == nullptr && right == nullptr); 
     }
 };
 
-Node* insert(Node* root, int valore);
-bool search(Node* root, int valore);
-Node* findMin(Node* root);
-Node* findMax(Node* root);
-int countNodes(Node* root);
-int countLeaves(Node* root);
-int countInRange(Node* root, int min, int max);
+// =====================================================================
+// PARTE B e C - La classe BST
+// =====================================================================
 
-int main(){
+class BST {
+private:
+    Node* root;
+    int numNodi;
+
+    // --- Metodi ricorsivi privati di supporto ---
     
-    system("PAUSE");
-    return 0;
-}
-
-Node* insert(Node* root, int valore){
-    if(root == nullptr){
-        return new Node(valore);
-    }
-    if(root->data == valore){
-        return root;
+    void inOrderRic(Node* p) const {
+        if (p == nullptr) return;
+        inOrderRic(p->getLeft());
+        cout << p->getData() << " ";
+        inOrderRic(p->getRight());
     }
 
-    if(valore > root->data){
-        root->r_child = insert(root->r_child, valore);
-    }else{
-        root->l_child = insert(root->l_child, valore);
+    int altezzaRic(Node* p) const {
+        if (p == nullptr) return 0;
+        return 1 + max(altezzaRic(p->getLeft()), altezzaRic(p->getRight()));
     }
 
-    return root;
-}
+    int contaFoglieRic(Node* p) const {
+        if (p == nullptr) return 0;
+        if (p->isLeaf()) return 1;
+        return contaFoglieRic(p->getLeft()) + contaFoglieRic(p->getRight());
+    }
 
-bool search(Node* root, int valore){
-    while(root != nullptr){
-        if(root->data == valore){
+    int contaIntervalloRic(Node* p, int low, int high) const {
+        if (p == nullptr) return 0;
+        int count = 0;
+        if (p->getData() >= low && p->getData() <= high) count = 1;
+        if (p->getData() > low) count += contaIntervalloRic(p->getLeft(), low, high);
+        if (p->getData() < high) count += contaIntervalloRic(p->getRight(), low, high);
+        return count;
+    }
+
+    void svuotaRic(Node* p) {
+        if (p == nullptr) return;
+        svuotaRic(p->getLeft());
+        svuotaRic(p->getRight());
+        delete p;
+    }
+
+    Node* rimuoviRic(Node* p, int val, bool &trovato) {
+        if (p == nullptr) return nullptr;
+
+        if (val < p->getData()) {
+            p->setLeft(rimuoviRic(p->getLeft(), val, trovato));
+        } else if (val > p->getData()) {
+            p->setRight(rimuoviRic(p->getRight(), val, trovato));
+        } else {
+            trovato = true;
+            if (p->getLeft() == nullptr) {
+                Node* temp = p->getRight();
+                delete p;
+                return temp;
+            } else if (p->getRight() == nullptr) {
+                Node* temp = p->getLeft();
+                delete p;
+                return temp;
+            }
+            Node* minDx = p->getRight();
+            while (minDx->getLeft() != nullptr) minDx = minDx->getLeft();
+            p->setData(minDx->getData());
+            bool dummy = false;
+            p->setRight(rimuoviRic(p->getRight(), minDx->getData(), dummy));
+        }
+        return p;
+    }
+
+public:
+    // Costruttore e Distruttore
+    BST() {
+        root = nullptr;
+        numNodi = 0;
+    }
+    ~BST() { svuota(); }
+
+    // Informazioni base
+    bool isEmpty() const { return root == nullptr; }
+    int size() const { return numNodi; }
+
+    // Inserimento
+    bool insert(int key) {
+        if (root == nullptr) {
+            root = new Node(key);
+            numNodi++;
             return true;
         }
-
-        if(valore > root->data){
-            root = root->r_child;
-        }else{
-            root = root->l_child;
+        Node* current = root;
+        Node* parent = nullptr;
+        while (current != nullptr) {
+            parent = current;
+            if (key == current->getData()) return false;
+            if (key < current->getData()) current = current->getLeft();
+            else current = current->getRight();
         }
+        if (key < parent->getData()) parent->setLeft(new Node(key));
+        else parent->setRight(new Node(key));
+        numNodi++;
+        return true;
     }
-    return false;
-}
-Node* findMin(Node* root){
-    if(root == nullptr){
-        return nullptr;
-    }
-    Node* current = root;
-    while(current->l_child != nullptr){
-        current = current->l_child;
-    }
-    return current;
 
-}
-Node* findMax(Node* root){
-    if(root == nullptr){
-        return nullptr;
+    // Ricerca e Visita
+    bool search(int key) const {
+        Node* current = root;
+        while (current != nullptr) {
+            if (key == current->getData()) return true;
+            if (key < current->getData()) current = current->getLeft();
+            else current = current->getRight();
+        }
+        return false;
     }
-    Node* current = root;
-    while(current->r_child != nullptr){
-        current = current->r_child;
-    }
-    return current;
 
-}
+    void inOrder() const { inOrderRic(root); }
+    int height() const { return altezzaRic(root); }
 
-int countNodes(Node* root){
-    if(root == nullptr){
-        return 0;
+    int minimo() const {
+        if (root == nullptr) return -1;
+        Node* p = root;
+        while (p->getLeft() != nullptr) p = p->getLeft();
+        return p->getData();
     }
-    return 1 + countNodes(root->l_child) + countNodes(root->r_child);
-}
 
-int countLeaves(Node* root){
-    if(root == nullptr){
-        return 0;
+    int massimo() const {
+        if (root == nullptr) return -1;
+        Node* p = root;
+        while (p->getRight() != nullptr) p = p->getRight();
+        return p->getData();
     }
-    if(root->l_child == nullptr && root->r_child == nullptr){
-        return 1;
-    }
-    return countLeaves(root->l_child) + countLeaves(root->r_child);
-}
 
-int countInRange(Node* root, int min, int max){
-    if(root == nullptr){
-        return 0;
+    // Cancellazione e interrogazioni avanzate
+    int contaFoglie() const { return contaFoglieRic(root); }
+    int contaIntervallo(int low, int high) const { return contaIntervalloRic(root, low, high); }
+
+    bool remove(int key) {
+        bool trovato = false;
+        root = rimuoviRic(root, key, trovato);
+        if (trovato) numNodi--;
+        return trovato;
     }
-    if(root->data < min){
-        return countInRange(root->r_child, min, max);
-    }else if(root->data > max){
-        return countInRange(root->l_child, min, max);
-    }else{
-        return 1 + countInRange(root->l_child, min, max) + countInRange(root->r_child, min, max);
+
+    void svuota() {
+        svuotaRic(root);
+        root = nullptr;
+        numNodi = 0;
     }
-}
+};
